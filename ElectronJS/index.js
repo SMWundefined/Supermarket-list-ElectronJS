@@ -3,8 +3,13 @@ const url = require('url');
 const path = require('path');
 const { Menu } = require('electron');
 
-const {app, BrowserWindow} = electron;
+const {app, BrowserWindow, ipcMain} = electron;
+
+//SET ENV IN PROD
+process.env.NODE_ENV = 'production';
+
 let indexWindow;
+let addWindow;
 
 //Listen for app to be ready
 app.on('ready', function(){
@@ -17,6 +22,10 @@ app.on('ready', function(){
         protocol: 'file:',
         slashes: true
     }));
+     //Quit app when closed
+     indexWindow.on('Closed', function(){
+         app.quit();
+     });
 
     //Calling Menu from the template
     const indexMenu = Menu.buildFromTemplate(indexMenuTemplate);
@@ -24,11 +33,93 @@ app.on('ready', function(){
     Menu.setApplicationMenu(indexMenu);
 });
 
+// Handling create Add Window
+
+function createAddWindow(){
+//Create a new window
+createAddWindow = new BrowserWindow({
+    width: 300,
+    height: 200,
+    title: 'Add Item to List',
+    //The lines below solved the issue
+    webPreferences: {
+        nodeIntegration: true
+    }
+});
+
+//load main html into window
+createAddWindow.loadURL(url.format({
+    pathname: path.join(__dirname, 'addWindow.html'),
+    protocol: 'file:',
+    slashes: true
+}));
+//Nullify Garbage collection
+addWindow.on('close', function(){
+    addWindow = null;
+});
+
+}
+
+//Catch item:add
+ipcMain.on('item:add', function(e, item){
+indexWindow.webContents.send('item:add', item);
+addWindow.close();
+});
+
 //Create a new Menu template
 
 const indexMenuTemplate = [
 {
-    label: 'File'
-}
-]
+    label: 'File',
+    submenu: [
+        {
+            label:'Add Item',
+            click(){
+              createAddWindow();
+            }
+          },
+        {
+            label: 'Clear Items',
+            click(){
+                indexWindow.webContents.send('item: clear', item);
 
+            }
+        },
+        {
+            label: 'Quit',
+            accelerator: process.platform == 'darwin' ? 'Command+Q' : 'Control+Q',
+            //Can also use accelerator: 'CmdOrCtrl+Q',
+            click(){
+                app.quit();
+            //Quits the app in a click event
+            }
+        }
+    ]
+}
+];
+/**Check if we are in mac, then add empty object to menu
+
+if (process.platform == 'darwin'){
+    indexMenuTemplate.unshift({});
+}
+**/
+
+//Add Dev tools if not in Prod Cycle
+
+if (process.env.NODE_ENV !== 'production'){
+    indexMenuTemplate.push({
+        label:'Developer Tools',
+        submenu:[
+            {
+                 label:'Toggle Devtools',
+                 accelerator: process.platform == 'darwin' ? 'Command+I' : 'Control+I',
+                 click(item, focusedWindow){
+                     focusedWindow.toggleDevTools();
+                 }
+            },
+            {
+                role: 'reload'
+            }
+        ]
+    })
+}

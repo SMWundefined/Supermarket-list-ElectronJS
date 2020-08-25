@@ -2,8 +2,51 @@
 <html lang="en">
 <head>
     <title>Shopping List</title>
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+            
 </head>
 <body>
-    <h1>Shopping List</h1>
+    <nav>
+        <div class="nav-wrapper">
+            <a class="brand-logo center"> Shopping List</a>
+        </div>
+    </nav>
+    <ul>
+    </ul>
+    <script>
+        const electron = require('electron');
+        const {ipcRenderer} = electron;
+        const ul = document.querySelector('ul');
+
+        //catch add item
+        ipcRenderer.on('item:add ', function(e, item){
+            ul.className = 'collection with-header';
+            //li.className = 'collection-header'
+            const li = document.createElement('li');
+            li.className = 'collection-item';
+            //creating li and creating the text node and adding it to the li
+            const itemText = document.createTextNode(item);
+            li.appendChild(itemText);
+            ul.appendChild(li);
+        });
+
+        //catch clear item
+        ipcRenderer.on('item:clear ', function(){
+            ul.innerHTML== '';
+        });
+
+        //remove individual items
+        ul.addEventListener('db1click', removeItem);
+        function removeItem(e){
+            e.target.remove();
+            if(ul.children.length==0){
+                ul.className = '';
+            }
+        }
+    </script>
 </body>
 </html>
