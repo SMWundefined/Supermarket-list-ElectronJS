@@ -1,5 +1,10 @@
 # Supermarket-list-ElectronJS
-electronJS based application which has a customizable window
+electronJS based application which has a customizable Desktop window
+
+- Built a desktop application using Electron.js which allows to build desktop apps using only JavaScript. 
+- Built a minimal shopping list app with a custom menu and multiple windows and implement Materialize CSS for styling. 
+- Publish the app to a package.dmg file using the Electron Packager.
+
 npm install 
 npm  run package-mac
 
